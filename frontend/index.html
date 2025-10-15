@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Laudo Cautelar - Checklist Pro</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="app-header">
+    <div class="brand">
+      <div class="logo">🚗</div>
+      <div>
+        <h1>Laudo Cautelar – AI Ready</h1>
+        <p>Checklist profissional com exportação, score IPA e evidências</p>
+      </div>
+    </div>
+    <div class="actions">
+      <button id="btn-new" class="ghost">Novo</button>
+      <button id="btn-save" class="primary">Salvar</button>
+      <button id="btn-load" class="ghost">Carregar</button>
+      <button id="btn-export" class="secondary">Exportar JSON</button>
+      <label class="import">
+        Importar JSON
+        <input type="file" id="import-file" accept="application/json" />
+      </label>
+      <button id="btn-print" class="secondary">Imprimir / PDF</button>
+    </div>
+  </header>
+
+  <main class="container">
+    <aside class="score-card" id="score-card">
+      <h2>IPA Score</h2>
+      <div class="score-value" id="score-value">—</div>
+      <div class="badge" id="score-badge">Aguardando dados</div>
+      <ul class="score-notes" id="score-notes"></ul>
+    </aside>
+
+    <form id="laudo-form">
+      <!-- Identificação -->
+      <section class="card">
+        <h3>🔑 Identificação do Veículo</h3>
+        <div class="grid two">
+          <label>Placa<input name="placa" required placeholder="ABC1D23" /></label>
+          <label>Chassi (VIN)<input name="vin" required placeholder="9BGXXXXXXXXXXXXX" /></label>
+          <label>Motor<input name="motor" placeholder="Código do motor" /></label>
+          <label>Ano/Modelo<input name="anoModelo" placeholder="2018/2019" /></label>
+        </div>
+        <div class="grid two">
+          <label class="inline">CRLV/CRV conferido?
+            <select name="crlvOk">
+              <option value="Sim">Sim</option>
+              <option value="Não">Não</option>
+            </select>
+          </label>
+          <label class="inline">Restrição/Histórico encontrado?
+            <select name="historicoRisco">
+              <option value="Não">Não</option>
+              <option value="Leilão">Leilão</option>
+              <option value="Roubo/Furto">Roubo/Furto</option>
+              <option value="Sinistro">Sinistro</option>
+              <option value="Restrição Judicial">Restrição Judicial</option>
+            </select>
+          </label>
+        </div>
+      </section>
+
+      <!-- Estrutura Física -->
+      <section class="card">
+        <h3>🛠 Estrutura Física</h3>
+        <div class="grid three">
+          <label>Longarinas
+            <select name="longarinas">
+              <option>Íntegra</option><option>Reparada</option><option>Com indícios</option>
+            </select>
+          </label>
+          <label>Colunas
+            <select name="colunas">
+              <option>Íntegra</option><option>Reparada</option><option>Com indícios</option>
+            </select>
+          </label>
+          <label>Painel corta-fogo
+            <select name="cortafogo">
+              <option>Original</option><option>Alterado</option>
+            </select>
+          </label>
+        </div>
+        <label>Sinais de colisão grave?
+          <select name="colisaoGrave">
+            <option>Não</option><option>Sim</option>
+          </select>
+        </label>
+        <label>Observações (estrutura)
+          <textarea name="obsEstrutura" rows="3" placeholder="Pontos de solda, cortes, desalinhamentos..."></textarea>
+        </label>
+      </section>
+
+      <!-- Carroceria e Pintura -->
+      <section class="card">
+        <h3>🎨 Carroceria e Pintura</h3>
+        <div class="grid three">
+          <label>Espessura média (µm)
+            <input type="number" name="pinturaEsp" placeholder="Ex.: 120" />
+          </label>
+          <label>Diferença de tonalidade
+            <select name="tonalidade">
+              <option>Não</option><option>Sim</option>
+            </select>
+          </label>
+          <label>Vidros originais
+            <select name="vidrosOrig">
+              <option>Sim</option><option>Não</option>
+            </select>
+          </label>
+        </div>
+        <div class="grid two">
+          <label>Faróis originais
+            <select name="faroisOrig">
+              <option>Sim</option><option>Não</option>
+            </select>
+          </label>
+          <label>Observações (pintura)
+            <textarea name="obsPintura" rows="3"></textarea>
+          </label>
+        </div>
+      </section>
+
+      <!-- Anti-Enchente -->
+      <section class="card">
+        <h3>💧 Condições Anti-Enchente</h3>
+        <div class="grid three">
+          <label>Oxidação em chicotes
+            <select name="oxidacao">
+              <option>Não</option><option>Leve</option><option>Moderada</option><option>Grave</option>
+            </select>
+          </label>
+          <label>Carpetes/forros
+            <select name="carpetes">
+              <option>Íntegros</option><option>Sinais de água</option>
+            </select>
+          </label>
+          <label>Odor de umidade
+            <select name="odor">
+              <option>Não</option><option>Sim</option>
+            </select>
+          </label>
+        </div>
+        <label>Funcionamento elétrico geral
+          <select name="eletricoGeral">
+            <option>Ok</option><option>Irregular</option>
+          </select>
+        </label>
+      </section>
+
+      <!-- OBD -->
+      <section class="card">
+        <h3>💻 Diagnóstico Eletrônico (OBD)</h3>
+        <div class="grid three">
+          <label>Falhas registradas?
+            <select name="falhasObd">
+              <option>Não</option><option>Sim</option>
+            </select>
+          </label>
+          <label>Quilometragem OBD
+            <input type="number" name="kmObd" placeholder="Ex.: 75321" />
+          </label>
+          <label>Consistência hodômetro
+            <select name="consistenciaKm">
+              <option>Sim</option><option>Não</option>
+            </select>
+          </label>
+        </div>
+        <div class="grid two">
+          <label>Airbags
+            <select name="airbags">
+              <option>Ativos</option><option>Falha detectada</option>
+            </select>
+          </label>
+          <label>Observações (OBD)
+            <textarea name="obsObd" rows="3"></textarea>
+          </label>
+        </div>
+      </section>
+
+      <!-- Mecânica -->
+      <section class="card">
+        <h3>⚙️ Mecânica Básica</h3>
+        <div class="grid three">
+          <label>Vazamentos
+            <select name="vazamentos">
+              <option>Não</option><option>Sim</option>
+            </select>
+          </label>
+          <label>Pneus
+            <select name="pneus">
+              <option>Uniforme</option><option>Desgaste irregular</option>
+            </select>
+          </label>
+          <label>Suspensão
+            <select name="suspensao">
+              <option>Ok</option><option>Irregularidades</option>
+            </select>
+          </label>
+        </div>
+      </section>
+
+      <!-- Testes Funcionais -->
+      <section class="card">
+        <h3>🚗 Testes Funcionais</h3>
+        <div class="grid three">
+          <label>Direção
+            <select name="direcao">
+              <option>Normal</option><option>Anomalia</option>
+            </select>
+          </label>
+          <label>Freios
+            <select name="freios">
+              <option>Normal</option><option>Anomalia</option>
+            </select>
+          </label>
+          <label>Sistema elétrico (vidros, travas, AC)
+            <select name="sistemaEletrico">
+              <option>Ok</option><option>Falha</option>
+            </select>
+          </label>
+        </div>
+      </section>
+
+      <!-- Evidências -->
+      <section class="card">
+        <h3>📷 Evidências (Fotos)</h3>
+        <div class="grid two">
+          <label>Fotos (múltiplas)
+            <input type="file" id="fotos" accept="image/*" multiple />
+          </label>
+          <div class="preview" id="preview"></div>
+        </div>
+        <label>Observações adicionais
+          <textarea name="observacoesFinais" rows="3"></textarea>
+        </label>
+      </section>
+
+      <!-- Conclusão -->
+      <section class="card">
+        <h3>✅ Conclusão</h3>
+        <div class="grid two">
+          <label>Status do veículo
+            <select name="statusVeiculo">
+              <option>Sem restrições relevantes</option>
+              <option>Reparos localizados</option>
+              <option>Evidências de colisão/enchente</option>
+            </select>
+          </label>
+          <label>Inspetor responsável
+            <input name="inspetor" placeholder="Nome do inspetor" />
+          </label>
+        </div>
+        <div class="actions-row">
+          <button type="button" id="btn-calc" class="primary">Calcular IPA</button>
+          <button type="submit" class="secondary">Gerar Resumo</button>
+        </div>
+      </section>
+    </form>
+  </main>
+
+  <footer class="app-footer">
+    <p>Laudo Cautelar – Checklist Pro • v1.0 • Offline-first (LocalStorage)</p>
+  </footer>
+
+  <template id="tpl-resumo">
+    <section class="card print-only">
+      <h3>Resumo do Laudo</h3>
+      <pre id="resumo-json"></pre>
+    </section>
+  </template>
+
+  <script src="app.js"></script>
+</body>
+</html>

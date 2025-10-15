@@ -1,0 +1,25 @@
+# Node
+node_modules/
+dist/
+npm-debug.log*
+*.log
+
+# Env & secrets
+.env
+
+# Uploads e dados locais
+uploads/
+data/postgres/
+data/pgadmin/
+
+# SO/Editor
+.DS_Store
+.vscode/
+
+# Coverage/Reports
+coverage/
+*.coverage
+
+# Misc
+*.tmp
+*.swp

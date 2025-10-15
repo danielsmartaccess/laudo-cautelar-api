@@ -1,0 +1,66 @@
+{
+  "info": {
+    "name": "API Laudo Cautelar",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_postman_id": "e2c9a9a0-9b3e-4f8f-a6f5-1234567890ab"
+  },
+  "item": [
+    {
+      "name": "Status",
+      "request": { "method": "GET", "url": "http://localhost:3000/api/status" }
+    },
+    {
+      "name": "Login",
+      "request": {
+        "method": "POST",
+        "header": [ { "key": "Content-Type", "value": "application/json" } ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"admin@example.com\",\n  \"senha\": \"admin123\"\n}"
+        },
+        "url": "http://localhost:3000/api/login"
+      }
+    },
+    {
+      "name": "Laudos - Criar",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{token}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"placa\": \"ABC1234\",\n  \"vin\": \"9BGRD08X04G117974\",\n  \"motor\": \"CHZ123456\",\n  \"anoModelo\": \"2020/2021\",\n  \"inspetor\": \"João Silva\",\n  \"longarinas\": \"Íntegra\",\n  \"colunas\": \"Íntegra\",\n  \"cortafogo\": \"Original\",\n  \"colisaoGrave\": \"Não\",\n  \"pinturaEsp\": 120,\n  \"tonalidade\": \"Não\",\n  \"vidrosOrig\": \"Sim\",\n  \"faroisOrig\": \"Sim\",\n  \"oxidacao\": \"Não\",\n  \"carpetes\": \"Íntegros\",\n  \"odor\": \"Não\",\n  \"eletricoGeral\": \"Ok\",\n  \"falhasObd\": \"Não\",\n  \"kmObd\": 45000,\n  \"consistenciaKm\": \"Sim\",\n  \"airbags\": \"Ativos\",\n  \"vazamentos\": \"Não\",\n  \"pneus\": \"Uniforme\",\n  \"suspensao\": \"Ok\",\n  \"direcao\": \"Normal\",\n  \"freios\": \"Normal\",\n  \"sistemaEletrico\": \"Ok\",\n  \"statusVeiculo\": \"Sem restrições relevantes\"\n}"
+        },
+        "url": "http://localhost:3000/api/laudos"
+      }
+    },
+    {
+      "name": "Laudos - Listar",
+      "request": { "method": "GET", "header": [ {"key":"Authorization","value":"Bearer {{token}}"} ], "url": "http://localhost:3000/api/laudos" }
+    },
+    {
+      "name": "Laudos - Por ID",
+      "request": { "method": "GET", "header": [ {"key":"Authorization","value":"Bearer {{token}}"} ], "url": "http://localhost:3000/api/laudos/1" }
+    },
+    {
+      "name": "Laudos - Por Placa",
+      "request": { "method": "GET", "header": [ {"key":"Authorization","value":"Bearer {{token}}"} ], "url": "http://localhost:3000/api/laudos/placa/ABC1234" }
+    },
+    {
+      "name": "Inspetores - Listar",
+      "request": { "method": "GET", "header": [ {"key":"Authorization","value":"Bearer {{token}}"} ], "url": "http://localhost:3000/api/inspetores" }
+    },
+    {
+      "name": "Inspetores - Criar",
+      "request": {
+        "method": "POST",
+        "header": [ {"key":"Authorization","value":"Bearer {{token}}"}, {"key":"Content-Type","value":"application/json"} ],
+        "body": { "mode": "raw", "raw": "{\n  \"email\": \"inspetor1@example.com\",\n  \"nome\": \"Inspetor 1\",\n  \"senha\": \"123456\"\n}" },
+        "url": "http://localhost:3000/api/inspetores"
+      }
+    }
+  ],
+  "variable": [ { "key": "token", "value": "" } ]
+}
