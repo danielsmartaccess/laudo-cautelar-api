@@ -8,10 +8,11 @@ import { Laudo } from "./entity/Laudo";
 import { FotoLaudo } from "./entity/FotoLaudo";
 import { Inspetor } from "./entity/Inspetor";
 import { uploadFotos } from "./middleware/upload";
-import { LaudoValidator } from "./utils/validators";
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import { InspetorService } from './services/InspetorService';
+import { LaudoService } from './services/LaudoService';
+import { FotoLaudoService } from './services/FotoLaudoService';
 // -----------------------------------------------------------------------------
 // Função para calcular IPA Score (mesma lógica do frontend)
 // Entrada: objeto "data" com os campos do laudo.
@@ -19,46 +20,7 @@ import { InspetorService } from './services/InspetorService';
 // Observação: Essa função espelha a regra de negócio do frontend para garantir
 // consistência no cálculo, independentemente de onde o dado foi gerado.
 // -----------------------------------------------------------------------------
-function calcIPA(data: any) {
-    let score = 100;
-    const notes: string[] = [];
-    if (data.longarinas !== 'Íntegra') { score -= 25; notes.push('Longarinas com reparos/indícios'); }
-    if (data.colunas !== 'Íntegra') { score -= 20; notes.push('Colunas com reparos/indícios'); }
-    if (data.cortafogo !== 'Original') { score -= 10; notes.push('Painel corta-fogo alterado'); }
-    if (data.colisaoGrave === 'Sim') { score -= 35; notes.push('Sinais de colisão grave'); }
-    if (data.tonalidade === 'Sim') { score -= 5; notes.push('Diferença de tonalidade'); }
-    if (data.vidrosOrig === 'Não') { score -= 3; notes.push('Vidros não originais'); }
-    if (data.faroisOrig === 'Não') { score -= 3; notes.push('Faróis não originais'); }
-    if (data.pinturaEsp && (data.pinturaEsp > 180 || data.pinturaEsp < 70)) { 
-        score -= 5; notes.push('Espessura de pintura fora do padrão'); 
-    }
-    if (data.oxidacao === 'Leve') score -= 5;
-    if (data.oxidacao === 'Moderada') score -= 12;
-    if (data.oxidacao === 'Grave') { score -= 25; notes.push('Oxidação significativa (enchente?)'); }
-    if (data.carpetes === 'Sinais de água') { score -= 15; notes.push('Carpetes/forros com sinais de água'); }
-    if (data.odor === 'Sim') { score -= 8; notes.push('Odor de umidade'); }
-    if (data.eletricoGeral === 'Irregular') { score -= 10; notes.push('Sistema elétrico irregular'); }
-    if (data.falhasObd === 'Sim') { score -= 10; notes.push('Falhas registradas no OBD'); }
-    if (data.consistenciaKm === 'Não') { score -= 20; notes.push('Inconsistência de quilometragem'); }
-    if (data.airbags === 'Falha detectada') { score -= 12; notes.push('Falha de airbags'); }
-    if (data.vazamentos === 'Sim') { score -= 8; notes.push('Vazamentos visíveis'); }
-    if (data.pneus === 'Desgaste irregular') { score -= 5; notes.push('Pneus com desgaste irregular'); }
-    if (data.suspensao === 'Irregularidades') { score -= 6; notes.push('Irregularidades na suspensão'); }
-    if (data.direcao === 'Anomalia') { score -= 7; notes.push('Anomalia na direção'); }
-    if (data.freios === 'Anomalia') { score -= 8; notes.push('Anomalia nos freios'); }
-    if (data.sistemaEletrico === 'Falha') { score -= 5; notes.push('Falha no sistema elétrico'); }
-    if (data.historicoRisco && data.historicoRisco !== 'Não') { 
-        score -= 10; notes.push(`Histórico: ${data.historicoRisco}`); 
-    }
-    if (data.crlvOk === 'Não') { score -= 5; notes.push('CRLV/CRV não conferido'); }
-    score = Math.max(0, Math.min(100, score));
-    let badge = 'Aguardando dados';
-    if (score >= 85) badge = 'Verde – Excelente';
-    else if (score >= 70) badge = 'Amarelo – Bom';
-    else if (score >= 50) badge = 'Laranja – Atenção';
-    else badge = 'Vermelho – Risco';
-    return { score, notes, badge };
-}
+// Regras de cálculo de IPA migradas para LaudoService
 
 // ----------------------------------------------------------------------------
 // Boot da aplicação: inicializa a conexão com o banco e sobe o servidor Express
@@ -93,9 +55,13 @@ myDataSource.initialize().then(async () => {
         }
     }
 
-    // Serviço de Inspetor
+    // Repositórios e Serviços
     const inspetorRepo = myDataSource.getRepository(Inspetor);
+    const laudoRepo = myDataSource.getRepository(Laudo);
+    const fotoRepo = myDataSource.getRepository(FotoLaudo);
     const inspetorService = new InspetorService(inspetorRepo);
+    const laudoService = new LaudoService(laudoRepo, fotoRepo);
+    const fotoService = new FotoLaudoService(laudoRepo, fotoRepo);
 
     // Seed: cria usuário admin padrão se vazio (apenas DEV)
     try {
@@ -137,11 +103,7 @@ myDataSource.initialize().then(async () => {
     // Listar todos os laudos
     app.get("/api/laudos", async function (req: Request, res: Response) {
         try {
-            const laudos = await myDataSource.getRepository(Laudo).find({
-                relations: ['fotos'],
-                order: { criadoEm: 'DESC' }
-            });
-            res.json(laudos);
+            res.json(await laudoService.listAll());
         } catch (error) {
             res.status(500).json({ error: 'Erro ao buscar laudos' });
         }
@@ -149,27 +111,16 @@ myDataSource.initialize().then(async () => {
     // Buscar laudo por ID
     app.get("/api/laudos/:id", async function (req: Request, res: Response) {
         try {
-            const laudo = await myDataSource.getRepository(Laudo).findOne({
-                where: { id: parseInt(req.params.id) },
-                relations: ['fotos']
-            });
-            if (!laudo) {
-                return res.status(404).json({ error: "Laudo não encontrado!" });
-            }
+            const laudo = await laudoService.getById(parseInt(req.params.id));
             res.json(laudo);
         } catch (error) {
-            res.status(500).json({ error: 'Erro ao buscar laudo' });
+            res.status(404).json({ error: 'Laudo não encontrado' });
         }
     });
     // Buscar laudos por placa
     app.get("/api/laudos/placa/:placa", async function (req: Request, res: Response) {
         try {
-            const laudos = await myDataSource.getRepository(Laudo).find({
-                where: { placa: req.params.placa.toUpperCase() },
-                relations: ['fotos'],
-                order: { criadoEm: 'DESC' }
-            });
-            res.json(laudos);
+            res.json(await laudoService.getByPlaca(req.params.placa));
         } catch (error) {
             res.status(500).json({ error: 'Erro ao buscar laudos por placa' });
         }
@@ -177,69 +128,29 @@ myDataSource.initialize().then(async () => {
     // Criar novo laudo
     app.post("/api/laudos", async function (req: Request, res: Response) {
         try {
-            // Validar dados de entrada
-            const validacao = LaudoValidator.validarLaudo(req.body);
-            
-            if (!validacao.valido) {
-                return res.status(400).json({
-                    error: 'Dados inválidos',
-                    erros: validacao.erros
-                });
-            }
-            
-            const laudoData = validacao.dados;
-            
-            // Calcular IPA Score
-            const { score, notes, badge } = calcIPA(laudoData);
-            
-            // Criar laudo com score calculado
-            const laudo = myDataSource.getRepository(Laudo).create({
-                ...laudoData,
-                ipaScore: score,
-                ipaBadge: badge,
-                ipaNotas: notes
-            });
-            
-            const resultado = await myDataSource.getRepository(Laudo).save(laudo);
-            res.json(resultado);
-        } catch (error) {
-            console.error('Erro ao criar laudo:', error);
-            res.status(500).json({ error: 'Erro ao criar laudo' });
+            const criado = await laudoService.create(req.body);
+            res.status(201).json(criado);
+        } catch (error: any) {
+            const status = Number((error as any).status) || 500;
+            const payload: any = { error: error?.message || 'Erro ao criar laudo' };
+            if ((error as any).details) payload.erros = (error as any).details;
+            res.status(status).json(payload);
         }
     });
     // Atualizar laudo
     app.put("/api/laudos/:id", async function (req: Request, res: Response) {
         try {
-            const laudo = await myDataSource.getRepository(Laudo).findOneBy({
-                id: parseInt(req.params.id),
-            });
-            if (!laudo) {
-                return res.status(404).json({ error: "Laudo não encontrado!" });
-            }
-            const laudoData = req.body;
-            // Recalcular IPA Score
-            const { score, notes, badge } = calcIPA(laudoData);
-            // Atualizar dados
-            myDataSource.getRepository(Laudo).merge(laudo, {
-                ...laudoData,
-                placa: laudoData.placa?.toUpperCase(),
-                ipaScore: score,
-                ipaBadge: badge,
-                ipaNotas: notes
-            });
-            const resultado = await myDataSource.getRepository(Laudo).save(laudo);
-            res.json(resultado);
-        } catch (error) {
-            res.status(500).json({ error: 'Erro ao atualizar laudo' });
+            const atualizado = await laudoService.update(parseInt(req.params.id), req.body);
+            res.json(atualizado);
+        } catch (error: any) {
+            const status = Number((error as any).status) || (String(error?.message).includes('não encontrado') ? 404 : 500);
+            res.status(status).json({ error: error?.message || 'Erro ao atualizar laudo' });
         }
     });
     // Deletar laudo
     app.delete("/api/laudos/:id", async function (req: Request, res: Response) {
         try {
-            const resultado = await myDataSource.getRepository(Laudo).delete(req.params.id);
-            if (resultado.affected === 0) {
-                return res.status(404).json({ error: "Laudo não encontrado!" });
-            }
+            await laudoService.remove(parseInt(req.params.id));
             res.json({ message: "Laudo deletado com sucesso!" });
         } catch (error) {
             res.status(500).json({ error: 'Erro ao deletar laudo' });
@@ -252,43 +163,12 @@ myDataSource.initialize().then(async () => {
     app.post("/api/laudos/:id/fotos", uploadFotos.array('fotos', 10), async function (req: Request, res: Response) {
         try {
             const laudoId = parseInt(req.params.id);
-            
-            // Verificar se o laudo existe
-            const laudo = await myDataSource.getRepository(Laudo).findOneBy({ id: laudoId });
-            if (!laudo) {
-                return res.status(404).json({ error: "Laudo não encontrado!" });
-            }
-            
             const files = req.files as Express.Multer.File[];
-            
-            if (!files || files.length === 0) {
-                return res.status(400).json({ error: "Nenhuma foto foi enviada" });
-            }
-            
-            const fotosRepository = myDataSource.getRepository(FotoLaudo);
-            const fotosSalvas = [];
-            
-            for (const file of files) {
-                const foto = fotosRepository.create({
-                    nomeArquivo: file.filename,
-                    caminhoArquivo: file.path,
-                    tamanhoArquivo: file.size,
-                    tipoMime: file.mimetype,
-                    laudo: laudo
-                });
-                
-                const fotoSalva = await fotosRepository.save(foto);
-                fotosSalvas.push(fotoSalva);
-            }
-            
-            res.json({
-                message: `${fotosSalvas.length} foto(s) enviada(s) com sucesso`,
-                fotos: fotosSalvas
-            });
-            
-        } catch (error) {
-            console.error('Erro ao fazer upload das fotos:', error);
-            res.status(500).json({ error: 'Erro ao fazer upload das fotos' });
+            const fotos = await fotoService.adicionarFotos(laudoId, files);
+            res.json({ message: `${fotos.length} foto(s) enviada(s) com sucesso`, fotos });
+        } catch (error: any) {
+            const status = Number((error as any).status) || 500;
+            res.status(status).json({ error: error?.message || 'Erro ao fazer upload das fotos' });
         }
     });
 
@@ -296,13 +176,7 @@ myDataSource.initialize().then(async () => {
     app.get("/api/laudos/:id/fotos", async function (req: Request, res: Response) {
         try {
             const laudoId = parseInt(req.params.id);
-            
-            const fotos = await myDataSource.getRepository(FotoLaudo).find({
-                where: { laudo: { id: laudoId } },
-                order: { criadoEm: 'DESC' }
-            });
-            
-            res.json(fotos);
+            res.json(await fotoService.listarPorLaudo(laudoId));
         } catch (error) {
             res.status(500).json({ error: 'Erro ao buscar fotos' });
         }
@@ -312,25 +186,11 @@ myDataSource.initialize().then(async () => {
     app.delete("/api/fotos/:id", async function (req: Request, res: Response) {
         try {
             const fotoId = parseInt(req.params.id);
-            
-            const foto = await myDataSource.getRepository(FotoLaudo).findOneBy({ id: fotoId });
-            
-            if (!foto) {
-                return res.status(404).json({ error: "Foto não encontrada!" });
-            }
-            
-            // Deletar arquivo físico
-            const fs = require('fs');
-            if (fs.existsSync(foto.caminhoArquivo)) {
-                fs.unlinkSync(foto.caminhoArquivo);
-            }
-            
-            // Deletar do banco
-            await myDataSource.getRepository(FotoLaudo).delete(fotoId);
-            
+            await fotoService.removerFoto(fotoId);
             res.json({ message: "Foto deletada com sucesso!" });
-        } catch (error) {
-            res.status(500).json({ error: 'Erro ao deletar foto' });
+        } catch (error: any) {
+            const status = Number((error as any).status) || 500;
+            res.status(status).json({ error: error?.message || 'Erro ao deletar foto' });
         }
     });
 

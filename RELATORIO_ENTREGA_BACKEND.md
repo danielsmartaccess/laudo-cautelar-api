@@ -1,14 +1,14 @@
 # Relatório de Entrega — Backend (API Laudo Cautelar)
 
 Data: 15/10/2025
-Versão da API: 1.1.0
+Versão da API: 1.2.0
 Pasta: `api-crud-produtos/`
 
 ## Visão geral
 
 API REST em Node.js + TypeScript para gestão de Laudos Cautelares de veículos, com:
 
-- CRUD de Laudos, cálculo automático de IPA Score e notas (consistente com o frontend).
+- CRUD de Laudos, cálculo automático de IPA Score e notas (consistente com o frontend), agora encapsulado em Service.
 - Upload e gestão de fotos por laudo (armazenamento em disco com Multer, validações e limites).
 - CRUD completo de Inspetores e autenticação via JWT (login, proteção de rotas).
 - Persistência em PostgreSQL via TypeORM.
@@ -26,11 +26,13 @@ API REST em Node.js + TypeScript para gestão de Laudos Cautelares de veículos,
 
 Estrutura de pastas (resumo):
 
-- `src/app.ts`: boot da API, rotas e regra de negócios do IPA.
+- `src/app.ts`: boot da API, rotas (refatoradas para Services).
 - `src/data-source.ts`: configuração do TypeORM com variáveis de ambiente.
 - `src/entity/`: `Laudo`, `FotoLaudo`, `Inspetor`.
 - `src/middleware/upload.ts`: storage + filtros Multer.
 - `src/utils/validators.ts`: sanitização e validação de laudos (placa, VIN, numéricos).
+ - `src/services/LaudoService.ts`: regras de negócio de laudos (validação + cálculo de IPA + CRUD).
+ - `src/services/FotoLaudoService.ts`: regras de negócio para fotos do laudo (persistência e remoção física).
 
 ## Entidades e relacionamento
 
@@ -51,7 +53,7 @@ Relacionamento principal: `Laudo (1) — (N) FotoLaudo`.
 
 ## Regras de negócio e validações
 
-- Cálculo IPA (`calcIPA` em `app.ts`):
+- Cálculo IPA (em `LaudoService`):
   - Deduz pontos conforme campos (estrutura, colisão, tonalidade, OBD, oxidação, etc.).
   - Gera `ipaScore`, `ipaBadge` (Verde/Amarelo/Laranja/Vermelho) e `ipaNotas` (lista textual).
   - Lógica espelha o frontend para consistência.

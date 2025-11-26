@@ -110,6 +110,8 @@ export class Laudo {
     @Column({ default: 'Sem restrições relevantes' })
     statusVeiculo!: string;
 
+    //RELAÇÃO AQUI COM O INSPETOR QUE FEZ O LAUDO
+
     @Column({ nullable: true })
     inspetor?: string;
 

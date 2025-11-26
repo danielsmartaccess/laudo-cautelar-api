@@ -6,61 +6,285 @@
   },
   "item": [
     {
-      "name": "Status",
-      "request": { "method": "GET", "url": "http://localhost:3000/api/status" }
-    },
-    {
-      "name": "Login",
-      "request": {
-        "method": "POST",
-        "header": [ { "key": "Content-Type", "value": "application/json" } ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"email\": \"admin@example.com\",\n  \"senha\": \"admin123\"\n}"
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Status",
+          "request": { "method": "GET", "url": "{{baseUrl}}/api/status" }
         },
-        "url": "http://localhost:3000/api/login"
-      }
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" } ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@example.com\",\n  \"senha\": \"admin123\"\n}"
+            },
+            "url": "{{baseUrl}}/api/login"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Captura token (em Postman). Em Insomnia, copie manualmente para a variável 'token'.",
+                  "var json = {};",
+                  "try { json = pm.response.json(); } catch (e) {}",
+                  "if (json.token) { pm.collectionVariables.set('token', json.token); }"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
     },
     {
-      "name": "Laudos - Criar",
-      "request": {
-        "method": "POST",
-        "header": [
-          { "key": "Content-Type", "value": "application/json" },
-          { "key": "Authorization", "value": "Bearer {{token}}" }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"placa\": \"ABC1234\",\n  \"vin\": \"9BGRD08X04G117974\",\n  \"motor\": \"CHZ123456\",\n  \"anoModelo\": \"2020/2021\",\n  \"inspetor\": \"João Silva\",\n  \"longarinas\": \"Íntegra\",\n  \"colunas\": \"Íntegra\",\n  \"cortafogo\": \"Original\",\n  \"colisaoGrave\": \"Não\",\n  \"pinturaEsp\": 120,\n  \"tonalidade\": \"Não\",\n  \"vidrosOrig\": \"Sim\",\n  \"faroisOrig\": \"Sim\",\n  \"oxidacao\": \"Não\",\n  \"carpetes\": \"Íntegros\",\n  \"odor\": \"Não\",\n  \"eletricoGeral\": \"Ok\",\n  \"falhasObd\": \"Não\",\n  \"kmObd\": 45000,\n  \"consistenciaKm\": \"Sim\",\n  \"airbags\": \"Ativos\",\n  \"vazamentos\": \"Não\",\n  \"pneus\": \"Uniforme\",\n  \"suspensao\": \"Ok\",\n  \"direcao\": \"Normal\",\n  \"freios\": \"Normal\",\n  \"sistemaEletrico\": \"Ok\",\n  \"statusVeiculo\": \"Sem restrições relevantes\"\n}"
+      "name": "Seed",
+      "item": [
+        {
+          "name": "Seed - Criar Inspetor 1 (Marina)",
+          "request": {
+            "method": "POST",
+            "header": [ {"key":"Authorization","value":"Bearer {{token}}"}, {"key":"Content-Type","value":"application/json"} ],
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"marina.souza@example.com\",\n  \"nome\": \"Marina Souza\",\n  \"senha\": \"12345678\",\n  \"telefone\": \"11987654321\",\n  \"registro\": \"CREA-12345\"\n}" },
+            "url": "{{baseUrl}}/api/inspetores"
+          },
+          "event": [{"listen":"test","script":{"type":"text/javascript","exec":["var r={};try{r=pm.response.json()}catch(e){}; if(r.id){ pm.collectionVariables.set('inspetorId1', r.id);} "]}}]
         },
-        "url": "http://localhost:3000/api/laudos"
-      }
+        {
+          "name": "Seed - Criar Inspetor 2 (Carlos)",
+          "request": {
+            "method": "POST",
+            "header": [ {"key":"Authorization","value":"Bearer {{token}}"}, {"key":"Content-Type","value":"application/json"} ],
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"carlos.ferreira@example.com\",\n  \"nome\": \"Carlos Ferreira\",\n  \"senha\": \"12345678\",\n  \"telefone\": \"21988887777\",\n  \"registro\": \"CREA-54321\"\n}" },
+            "url": "{{baseUrl}}/api/inspetores"
+          },
+          "event": [{"listen":"test","script":{"type":"text/javascript","exec":["var r={};try{r=pm.response.json()}catch(e){}; if(r.id){ pm.collectionVariables.set('inspetorId2', r.id);} "]}}]
+        },
+        {
+          "name": "Seed - Criar Inspetor 3 (Beatriz)",
+          "request": {
+            "method": "POST",
+            "header": [ {"key":"Authorization","value":"Bearer {{token}}"}, {"key":"Content-Type","value":"application/json"} ],
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"beatriz.lima@example.com\",\n  \"nome\": \"Beatriz Lima\",\n  \"senha\": \"12345678\",\n  \"telefone\": \"31999990000\",\n  \"registro\": \"CREA-67890\"\n}" },
+            "url": "{{baseUrl}}/api/inspetores"
+          },
+          "event": [{"listen":"test","script":{"type":"text/javascript","exec":["var r={};try{r=pm.response.json()}catch(e){}; if(r.id){ pm.collectionVariables.set('inspetorId3', r.id);} "]}}]
+        },
+        {
+          "name": "Seed - Criar Laudo 1 (ABC1D23)",
+          "request": {
+            "method": "POST",
+            "header": [ {"key":"Authorization","value":"Bearer {{token}}"}, {"key":"Content-Type","value":"application/json"} ],
+            "body": { "mode": "raw", "raw": "{\n  \"placa\": \"ABC1D23\",\n  \"vin\": \"9BWZZZ377VT004251\",\n  \"motor\": \"CAX123456\",\n  \"anoModelo\": \"2018/2019\",\n  \"inspetor\": \"Marina Souza\",\n  \"longarinas\": \"Íntegra\",\n  \"colunas\": \"Íntegra\",\n  \"cortafogo\": \"Original\",\n  \"colisaoGrave\": \"Não\",\n  \"pinturaEsp\": 120,\n  \"tonalidade\": \"Não\",\n  \"vidrosOrig\": \"Sim\",\n  \"faroisOrig\": \"Sim\",\n  \"oxidacao\": \"Não\",\n  \"carpetes\": \"Íntegros\",\n  \"odor\": \"Não\",\n  \"eletricoGeral\": \"Ok\",\n  \"falhasObd\": \"Não\",\n  \"kmObd\": 45000,\n  \"consistenciaKm\": \"Sim\",\n  \"airbags\": \"Ativos\",\n  \"vazamentos\": \"Não\",\n  \"pneus\": \"Uniforme\",\n  \"suspensao\": \"Ok\",\n  \"direcao\": \"Normal\",\n  \"freios\": \"Normal\",\n  \"sistemaEletrico\": \"Ok\",\n  \"statusVeiculo\": \"Sem restrições relevantes\"\n}" },
+            "url": "{{baseUrl}}/api/laudos"
+          },
+          "event": [{"listen":"test","script":{"type":"text/javascript","exec":["var r={};try{r=pm.response.json()}catch(e){}; if(r.id){ pm.collectionVariables.set('laudoId1', r.id);} "]}}]
+        },
+        {
+          "name": "Seed - Criar Laudo 2 (RST2E45)",
+          "request": {
+            "method": "POST",
+            "header": [ {"key":"Authorization","value":"Bearer {{token}}"}, {"key":"Content-Type","value":"application/json"} ],
+            "body": { "mode": "raw", "raw": "{\n  \"placa\": \"RST2E45\",\n  \"vin\": \"8ADZZZ123VT556677\",\n  \"motor\": \"ETR987654\",\n  \"anoModelo\": \"2021/2022\",\n  \"inspetor\": \"Carlos Ferreira\",\n  \"longarinas\": \"Íntegra\",\n  \"colunas\": \"Íntegra\",\n  \"cortafogo\": \"Original\",\n  \"colisaoGrave\": \"Não\",\n  \"pinturaEsp\": 150,\n  \"tonalidade\": \"Não\",\n  \"vidrosOrig\": \"Sim\",\n  \"faroisOrig\": \"Sim\",\n  \"oxidacao\": \"Não\",\n  \"carpetes\": \"Íntegros\",\n  \"odor\": \"Não\",\n  \"eletricoGeral\": \"Ok\",\n  \"falhasObd\": \"Não\",\n  \"kmObd\": 22000,\n  \"consistenciaKm\": \"Sim\",\n  \"airbags\": \"Ativos\",\n  \"vazamentos\": \"Não\",\n  \"pneus\": \"Uniforme\",\n  \"suspensao\": \"Ok\",\n  \"direcao\": \"Normal\",\n  \"freios\": \"Normal\",\n  \"sistemaEletrico\": \"Ok\",\n  \"statusVeiculo\": \"Sem restrições relevantes\"\n}" },
+            "url": "{{baseUrl}}/api/laudos"
+          },
+          "event": [{"listen":"test","script":{"type":"text/javascript","exec":["var r={};try{r=pm.response.json()}catch(e){}; if(r.id){ pm.collectionVariables.set('laudoId2', r.id);} "]}}]
+        },
+        {
+          "name": "Seed - Criar Laudo 3 (JKL3M67)",
+          "request": {
+            "method": "POST",
+            "header": [ {"key":"Authorization","value":"Bearer {{token}}"}, {"key":"Content-Type","value":"application/json"} ],
+            "body": { "mode": "raw", "raw": "{\n  \"placa\": \"JKL3M67\",\n  \"vin\": \"9BG116GW04C123456\",\n  \"motor\": \"QWE654321\",\n  \"anoModelo\": \"2016/2017\",\n  \"inspetor\": \"Beatriz Lima\",\n  \"longarinas\": \"Reparada\",\n  \"colunas\": \"Íntegra\",\n  \"cortafogo\": \"Original\",\n  \"colisaoGrave\": \"Não\",\n  \"pinturaEsp\": 200,\n  \"tonalidade\": \"Sim\",\n  \"vidrosOrig\": \"Não\",\n  \"faroisOrig\": \"Sim\",\n  \"oxidacao\": \"Leve\",\n  \"carpetes\": \"Íntegros\",\n  \"odor\": \"Não\",\n  \"eletricoGeral\": \"Ok\",\n  \"falhasObd\": \"Não\",\n  \"kmObd\": 89000,\n  \"consistenciaKm\": \"Sim\",\n  \"airbags\": \"Ativos\",\n  \"vazamentos\": \"Não\",\n  \"pneus\": \"Uniforme\",\n  \"suspensao\": \"Ok\",\n  \"direcao\": \"Normal\",\n  \"freios\": \"Normal\",\n  \"sistemaEletrico\": \"Ok\",\n  \"statusVeiculo\": \"Sem restrições relevantes\"\n}" },
+            "url": "{{baseUrl}}/api/laudos"
+          },
+          "event": [{"listen":"test","script":{"type":"text/javascript","exec":["var r={};try{r=pm.response.json()}catch(e){}; if(r.id){ pm.collectionVariables.set('laudoId3', r.id);} "]}}]
+        },
+        {
+          "name": "Seed - Criar Laudo 4 (NOP4Q89)",
+          "request": {
+            "method": "POST",
+            "header": [ {"key":"Authorization","value":"Bearer {{token}}"}, {"key":"Content-Type","value":"application/json"} ],
+            "body": { "mode": "raw", "raw": "{\n  \"placa\": \"NOP4Q89\",\n  \"vin\": \"93YBM12345A678901\",\n  \"inspetor\": \"Marina Souza\",\n  \"longarinas\": \"Íntegra\",\n  \"colunas\": \"Reparada\",\n  \"cortafogo\": \"Original\",\n  \"colisaoGrave\": \"Não\",\n  \"pinturaEsp\": 70,\n  \"tonalidade\": \"Não\",\n  \"vidrosOrig\": \"Sim\",\n  \"faroisOrig\": \"Não\",\n  \"oxidacao\": \"Moderada\",\n  \"carpetes\": \"Íntegros\",\n  \"odor\": \"Sim\",\n  \"eletricoGeral\": \"Irregular\",\n  \"falhasObd\": \"Sim\",\n  \"consistenciaKm\": \"Não\",\n  \"airbags\": \"Ativos\",\n  \"vazamentos\": \"Sim\",\n  \"pneus\": \"Desgaste irregular\",\n  \"suspensao\": \"Irregularidades\",\n  \"direcao\": \"Anomalia\",\n  \"freios\": \"Anomalia\",\n  \"sistemaEletrico\": \"Falha\",\n  \"statusVeiculo\": \"Atenção: verificar itens críticos\"\n}" },
+            "url": "{{baseUrl}}/api/laudos"
+          },
+          "event": [{"listen":"test","script":{"type":"text/javascript","exec":["var r={};try{r=pm.response.json()}catch(e){}; if(r.id){ pm.collectionVariables.set('laudoId4', r.id);} "]}}]
+        },
+        {
+          "name": "Seed - Criar Laudo 5 (XYZ5A10)",
+          "request": {
+            "method": "POST",
+            "header": [ {"key":"Authorization","value":"Bearer {{token}}"}, {"key":"Content-Type","value":"application/json"} ],
+            "body": { "mode": "raw", "raw": "{\n  \"placa\": \"XYZ5A10\",\n  \"vin\": \"9BDZZF8W09P234567\",\n  \"inspetor\": \"Carlos Ferreira\",\n  \"longarinas\": \"Íntegra\",\n  \"colunas\": \"Íntegra\",\n  \"cortafogo\": \"Original\",\n  \"colisaoGrave\": \"Não\",\n  \"pinturaEsp\": 95,\n  \"tonalidade\": \"Não\",\n  \"vidrosOrig\": \"Sim\",\n  \"faroisOrig\": \"Sim\",\n  \"oxidacao\": \"Não\",\n  \"carpetes\": \"Íntegros\",\n  \"odor\": \"Não\",\n  \"eletricoGeral\": \"Ok\",\n  \"falhasObd\": \"Não\",\n  \"consistenciaKm\": \"Sim\",\n  \"airbags\": \"Ativos\",\n  \"vazamentos\": \"Não\",\n  \"pneus\": \"Uniforme\",\n  \"suspensao\": \"Ok\",\n  \"direcao\": \"Normal\",\n  \"freios\": \"Normal\",\n  \"sistemaEletrico\": \"Ok\",\n  \"statusVeiculo\": \"Sem restrições relevantes\"\n}" },
+            "url": "{{baseUrl}}/api/laudos"
+          },
+          "event": [{"listen":"test","script":{"type":"text/javascript","exec":["var r={};try{r=pm.response.json()}catch(e){}; if(r.id){ pm.collectionVariables.set('laudoId5', r.id);} "]}}]
+        },
+        {
+          "name": "Seed - Criar Laudo 6 (BCD6F12)",
+          "request": {
+            "method": "POST",
+            "header": [ {"key":"Authorization","value":"Bearer {{token}}"}, {"key":"Content-Type","value":"application/json"} ],
+            "body": { "mode": "raw", "raw": "{\n  \"placa\": \"BCD6F12\",\n  \"vin\": \"9BFZZZ8P0AP345678\",\n  \"inspetor\": \"Beatriz Lima\",\n  \"longarinas\": \"Íntegra\",\n  \"colunas\": \"Íntegra\",\n  \"cortafogo\": \"Original\",\n  \"colisaoGrave\": \"Não\",\n  \"pinturaEsp\": 110,\n  \"tonalidade\": \"Não\",\n  \"vidrosOrig\": \"Sim\",\n  \"faroisOrig\": \"Sim\",\n  \"oxidacao\": \"Não\",\n  \"carpetes\": \"Íntegros\",\n  \"odor\": \"Não\",\n  \"eletricoGeral\": \"Ok\",\n  \"falhasObd\": \"Não\",\n  \"consistenciaKm\": \"Sim\",\n  \"airbags\": \"Ativos\",\n  \"vazamentos\": \"Não\",\n  \"pneus\": \"Uniforme\",\n  \"suspensao\": \"Ok\",\n  \"direcao\": \"Normal\",\n  \"freios\": \"Normal\",\n  \"sistemaEletrico\": \"Ok\",\n  \"statusVeiculo\": \"Sem restrições relevantes\"\n}" },
+            "url": "{{baseUrl}}/api/laudos"
+          },
+          "event": [{"listen":"test","script":{"type":"text/javascript","exec":["var r={};try{r=pm.response.json()}catch(e){}; if(r.id){ pm.collectionVariables.set('laudoId6', r.id);} "]}}]
+        },
+        {
+          "name": "Seed - Criar Laudo 7 (EFG7H34)",
+          "request": {
+            "method": "POST",
+            "header": [ {"key":"Authorization","value":"Bearer {{token}}"}, {"key":"Content-Type","value":"application/json"} ],
+            "body": { "mode": "raw", "raw": "{\n  \"placa\": \"EFG7H34\",\n  \"vin\": \"9C2ZZZ123VT654321\",\n  \"inspetor\": \"Marina Souza\",\n  \"longarinas\": \"Íntegra\",\n  \"colunas\": \"Íntegra\",\n  \"cortafogo\": \"Original\",\n  \"colisaoGrave\": \"Não\",\n  \"pinturaEsp\": 130,\n  \"tonalidade\": \"Não\",\n  \"vidrosOrig\": \"Sim\",\n  \"faroisOrig\": \"Sim\",\n  \"oxidacao\": \"Não\",\n  \"carpetes\": \"Íntegros\",\n  \"odor\": \"Não\",\n  \"eletricoGeral\": \"Ok\",\n  \"falhasObd\": \"Não\",\n  \"consistenciaKm\": \"Sim\",\n  \"airbags\": \"Ativos\",\n  \"vazamentos\": \"Não\",\n  \"pneus\": \"Uniforme\",\n  \"suspensao\": \"Ok\",\n  \"direcao\": \"Normal\",\n  \"freios\": \"Normal\",\n  \"sistemaEletrico\": \"Ok\",\n  \"statusVeiculo\": \"Sem restrições relevantes\"\n}" },
+            "url": "{{baseUrl}}/api/laudos"
+          },
+          "event": [{"listen":"test","script":{"type":"text/javascript","exec":["var r={};try{r=pm.response.json()}catch(e){}; if(r.id){ pm.collectionVariables.set('laudoId7', r.id);} "]}}]
+        },
+        {
+          "name": "Seed - Criar Laudo 8 (HIJ8K56)",
+          "request": {
+            "method": "POST",
+            "header": [ {"key":"Authorization","value":"Bearer {{token}}"}, {"key":"Content-Type","value":"application/json"} ],
+            "body": { "mode": "raw", "raw": "{\n  \"placa\": \"HIJ8K56\",\n  \"vin\": \"9BD1A23B45C678901\",\n  \"inspetor\": \"Carlos Ferreira\",\n  \"longarinas\": \"Íntegra\",\n  \"colunas\": \"Íntegra\",\n  \"cortafogo\": \"Original\",\n  \"colisaoGrave\": \"Não\",\n  \"pinturaEsp\": 160,\n  \"tonalidade\": \"Não\",\n  \"vidrosOrig\": \"Sim\",\n  \"faroisOrig\": \"Sim\",\n  \"oxidacao\": \"Não\",\n  \"carpetes\": \"Íntegros\",\n  \"odor\": \"Não\",\n  \"eletricoGeral\": \"Ok\",\n  \"falhasObd\": \"Não\",\n  \"consistenciaKm\": \"Sim\",\n  \"airbags\": \"Ativos\",\n  \"vazamentos\": \"Não\",\n  \"pneus\": \"Uniforme\",\n  \"suspensao\": \"Ok\",\n  \"direcao\": \"Normal\",\n  \"freios\": \"Normal\",\n  \"sistemaEletrico\": \"Ok\",\n  \"statusVeiculo\": \"Sem restrições relevantes\"\n}" },
+            "url": "{{baseUrl}}/api/laudos"
+          },
+          "event": [{"listen":"test","script":{"type":"text/javascript","exec":["var r={};try{r=pm.response.json()}catch(e){}; if(r.id){ pm.collectionVariables.set('laudoId8', r.id);} "]}}]
+        },
+        {
+          "name": "Seed - Criar Laudo 9 (LMN9P78)",
+          "request": {
+            "method": "POST",
+            "header": [ {"key":"Authorization","value":"Bearer {{token}}"}, {"key":"Content-Type","value":"application/json"} ],
+            "body": { "mode": "raw", "raw": "{\n  \"placa\": \"LMN9P78\",\n  \"vin\": \"9BWZZZ8PZAP987654\",\n  \"inspetor\": \"Beatriz Lima\",\n  \"longarinas\": \"Íntegra\",\n  \"colunas\": \"Íntegra\",\n  \"cortafogo\": \"Original\",\n  \"colisaoGrave\": \"Não\",\n  \"pinturaEsp\": 145,\n  \"tonalidade\": \"Não\",\n  \"vidrosOrig\": \"Sim\",\n  \"faroisOrig\": \"Sim\",\n  \"oxidacao\": \"Não\",\n  \"carpetes\": \"Íntegros\",\n  \"odor\": \"Não\",\n  \"eletricoGeral\": \"Ok\",\n  \"falhasObd\": \"Não\",\n  \"consistenciaKm\": \"Sim\",\n  \"airbags\": \"Ativos\",\n  \"vazamentos\": \"Não\",\n  \"pneus\": \"Uniforme\",\n  \"suspensao\": \"Ok\",\n  \"direcao\": \"Normal\",\n  \"freios\": \"Normal\",\n  \"sistemaEletrico\": \"Ok\",\n  \"statusVeiculo\": \"Sem restrições relevantes\"\n}" },
+            "url": "{{baseUrl}}/api/laudos"
+          },
+          "event": [{"listen":"test","script":{"type":"text/javascript","exec":["var r={};try{r=pm.response.json()}catch(e){}; if(r.id){ pm.collectionVariables.set('laudoId9', r.id);} "]}}]
+        }
+      ]
     },
     {
-      "name": "Laudos - Listar",
-      "request": { "method": "GET", "header": [ {"key":"Authorization","value":"Bearer {{token}}"} ], "url": "http://localhost:3000/api/laudos" }
+      "name": "Inspetores",
+      "item": [
+        {
+          "name": "Inspetores - Criar (genérico)",
+          "request": {
+            "method": "POST",
+            "header": [ {"key":"Authorization","value":"Bearer {{token}}"}, {"key":"Content-Type","value":"application/json"} ],
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"novo.inspetor@example.com\",\n  \"nome\": \"Novo Inspetor\",\n  \"senha\": \"12345678\",\n  \"telefone\": \"11911112222\",\n  \"registro\": \"CREA-00001\"\n}" },
+            "url": "{{baseUrl}}/api/inspetores"
+          },
+          "event": [{"listen":"test","script":{"type":"text/javascript","exec":["var r={};try{r=pm.response.json()}catch(e){}; if(r.id){ pm.collectionVariables.set('inspetorIdTemp', r.id);} "]}}]
+        },
+        {
+          "name": "Inspetores - Listar",
+          "request": { "method": "GET", "header": [ {"key":"Authorization","value":"Bearer {{token}}"} ], "url": "{{baseUrl}}/api/inspetores" }
+        },
+        {
+          "name": "Inspetores - Por ID (inspetorId1)",
+          "request": { "method": "GET", "header": [ {"key":"Authorization","value":"Bearer {{token}}"} ], "url": "{{baseUrl}}/api/inspetores/{{inspetorId1}}" }
+        },
+        {
+          "name": "Inspetores - Atualizar (inspetorId1)",
+          "request": { "method": "PUT", "header": [ {"key":"Authorization","value":"Bearer {{token}}"}, {"key":"Content-Type","value":"application/json"} ], "url": "{{baseUrl}}/api/inspetores/{{inspetorId1}}",
+            "body": {"mode":"raw","raw":"{\n  \"telefone\": \"11922223333\"\n}"}
+          }
+        },
+        {
+          "name": "Inspetores - Deletar (inspetorIdTemp)",
+          "request": { "method": "DELETE", "header": [ {"key":"Authorization","value":"Bearer {{token}}"} ], "url": "{{baseUrl}}/api/inspetores/{{inspetorIdTemp}}" }
+        }
+      ]
     },
     {
-      "name": "Laudos - Por ID",
-      "request": { "method": "GET", "header": [ {"key":"Authorization","value":"Bearer {{token}}"} ], "url": "http://localhost:3000/api/laudos/1" }
+      "name": "Laudos",
+      "item": [
+        {
+          "name": "Laudos - Criar (genérico)",
+          "request": {
+            "method": "POST",
+            "header": [ { "key": "Content-Type", "value": "application/json" }, { "key": "Authorization", "value": "Bearer {{token}}" } ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"placa\": \"AAA1A11\",\n  \"vin\": \"9ZZZZZ8PZAP123456\",\n  \"inspetor\": \"Marina Souza\",\n  \"longarinas\": \"Íntegra\",\n  \"colunas\": \"Íntegra\",\n  \"cortafogo\": \"Original\",\n  \"colisaoGrave\": \"Não\"\n}"
+            },
+            "url": "{{baseUrl}}/api/laudos"
+          },
+          "event": [{"listen":"test","script":{"type":"text/javascript","exec":["var r={};try{r=pm.response.json()}catch(e){}; if(r.id){ pm.collectionVariables.set('laudoIdTemp', r.id);} "]}}]
+        },
+        {
+          "name": "Laudos - Listar",
+          "request": { "method": "GET", "header": [ {"key":"Authorization","value":"Bearer {{token}}"} ], "url": "{{baseUrl}}/api/laudos" }
+        },
+        {
+          "name": "Laudos - Por ID (laudoId1)",
+          "request": { "method": "GET", "header": [ {"key":"Authorization","value":"Bearer {{token}}"} ], "url": "{{baseUrl}}/api/laudos/{{laudoId1}}" }
+        },
+        {
+          "name": "Laudos - Por Placa (ABC1D23)",
+          "request": { "method": "GET", "header": [ {"key":"Authorization","value":"Bearer {{token}}"} ], "url": "{{baseUrl}}/api/laudos/placa/ABC1D23" }
+        },
+        {
+          "name": "Laudos - Atualizar (laudoId1)",
+          "request": { "method": "PUT", "header": [ {"key":"Authorization","value":"Bearer {{token}}"}, {"key":"Content-Type","value":"application/json"} ], "url": "{{baseUrl}}/api/laudos/{{laudoId1}}",
+            "body": {"mode":"raw","raw":"{\n  \"statusVeiculo\": \"Revisão recomendada\"\n}"}
+          }
+        },
+        {
+          "name": "Laudos - Deletar (laudoIdTemp)",
+          "request": { "method": "DELETE", "header": [ {"key":"Authorization","value":"Bearer {{token}}"} ], "url": "{{baseUrl}}/api/laudos/{{laudoIdTemp}}" }
+        }
+      ]
     },
     {
-      "name": "Laudos - Por Placa",
-      "request": { "method": "GET", "header": [ {"key":"Authorization","value":"Bearer {{token}}"} ], "url": "http://localhost:3000/api/laudos/placa/ABC1234" }
-    },
-    {
-      "name": "Inspetores - Listar",
-      "request": { "method": "GET", "header": [ {"key":"Authorization","value":"Bearer {{token}}"} ], "url": "http://localhost:3000/api/inspetores" }
-    },
-    {
-      "name": "Inspetores - Criar",
-      "request": {
-        "method": "POST",
-        "header": [ {"key":"Authorization","value":"Bearer {{token}}"}, {"key":"Content-Type","value":"application/json"} ],
-        "body": { "mode": "raw", "raw": "{\n  \"email\": \"inspetor1@example.com\",\n  \"nome\": \"Inspetor 1\",\n  \"senha\": \"123456\"\n}" },
-        "url": "http://localhost:3000/api/inspetores"
-      }
+      "name": "Fotos",
+      "item": [
+        {
+          "name": "Fotos - Upload (laudoId1)",
+          "request": {
+            "method": "POST",
+            "header": [ {"key":"Authorization","value":"Bearer {{token}}"} ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                { "key": "fotos", "type": "file", "src": ["C:/caminho/para/uma/foto1.jpg"] },
+                { "key": "fotos", "type": "file", "src": ["C:/caminho/para/uma/foto2.jpg"] }
+              ]
+            },
+            "url": "{{baseUrl}}/api/laudos/{{laudoId1}}/fotos"
+          },
+          "event": [{"listen":"test","script":{"type":"text/javascript","exec":["var r={};try{r=pm.response.json()}catch(e){}; if(r.fotos&&r.fotos.length){ pm.collectionVariables.set('fotoId1', r.fotos[0].id);} "]}}]
+        },
+        {
+          "name": "Fotos - Listar do Laudo (laudoId1)",
+          "request": { "method": "GET", "header": [ {"key":"Authorization","value":"Bearer {{token}}"} ], "url": "{{baseUrl}}/api/laudos/{{laudoId1}}/fotos" }
+        },
+        {
+          "name": "Fotos - Deletar (fotoId1)",
+          "request": { "method": "DELETE", "header": [ {"key":"Authorization","value":"Bearer {{token}}"} ], "url": "{{baseUrl}}/api/fotos/{{fotoId1}}" }
+        }
+      ]
     }
   ],
-  "variable": [ { "key": "token", "value": "" } ]
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:3000" },
+    { "key": "token", "value": "" },
+    { "key": "inspetorId1", "value": "" },
+    { "key": "inspetorId2", "value": "" },
+    { "key": "inspetorId3", "value": "" },
+    { "key": "inspetorIdTemp", "value": "" },
+    { "key": "laudoId1", "value": "" },
+    { "key": "laudoId2", "value": "" },
+    { "key": "laudoId3", "value": "" },
+    { "key": "laudoId4", "value": "" },
+    { "key": "laudoId5", "value": "" },
+    { "key": "laudoId6", "value": "" },
+    { "key": "laudoId7", "value": "" },
+    { "key": "laudoId8", "value": "" },
+    { "key": "laudoId9", "value": "" },
+    { "key": "laudoIdTemp", "value": "" },
+    { "key": "fotoId1", "value": "" }
+  ]
 }
